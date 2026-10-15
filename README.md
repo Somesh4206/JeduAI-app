@@ -118,7 +118,7 @@ Sign-up is open to everyone. Creating **Staff**/**Admin** accounts at sign-up re
 
 ---
 
-## ⚙️ Environment Variables
+## ⚙️ Environment Variable
 
 Copy `.env.example` → `.env`. Everything works with the defaults in this sandbox; for other deployments set:
 
