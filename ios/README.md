@@ -1,7 +1,7 @@
 # JeduAI for iOS
 
-A thin, native iOS shell (UIKit + WKWebView) around the JeduAI web app — the
-iPhone/iPad counterpart of the Android APK. The server is **baked in**:
+A thin, native iOS shell (UIKit + WK Web View) around the Jedu AI web app — the
+iPhone/iPad counter part of the Android APK. The server is **baked in**:
 
 ```
 https://jeduai-app.space-z.ai
