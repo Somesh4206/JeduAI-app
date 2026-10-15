@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5B5FEF"/>
+      <stop offset="1" stop-color="#773DE8"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#g)"/>
+  <path d="M128 160c0-26 21-48 48-48h160c26 0 48 22 48 48v192c0 26-22 48-48 48H176c-27 0-48-22-48-48V160z" fill="#fff" opacity="0.14"/>
+  <text x="256" y="316" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="210" font-weight="800" text-anchor="middle" fill="#fff">J</text>
+  <circle cx="368" cy="152" r="42" fill="#39C6F4"/>
+  <path d="M352 152l12 12 24-26" stroke="#fff" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

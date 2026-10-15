@@ -1,0 +1,61 @@
+# dependencies
+node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.log
+
+# env files (keep the example)
+.env*
+!.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# runtime data — never commit user data, sessions or uploads
+/db/*.db
+/db/*.db-journal
+/db/uploads/
+
+# local dev / sandbox artifacts
+/tool-results/
+/download/
+/upload/
+/worklog.md
+.zscripts/
+/skills/
+.z-ai-config
+.claude
+local-*
+
+# android build outputs
+/android/build/
+/android/out/

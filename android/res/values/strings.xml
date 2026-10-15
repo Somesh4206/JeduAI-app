@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">JeduAI</string>
+    <string name="tagline">Learn in Your Language</string>
+    <string name="url_hint">Server address, e.g. https://school.example.com</string>
+    <string name="connect">Connect</string>
+    <string name="invalid_url">Please enter a valid address, like https://your-jeduai-server.com</string>
+    <string name="setup_help">JeduAI is self-hosted. Enter the web address your school or teacher gave you — the same link you use in the browser. Your account and data stay on that server.</string>
+    <string name="offline_title">Can\'t reach the server</string>
+    <string name="offline_msg">Check your internet connection and the server address, then try again.</string>
+    <string name="retry">Try again</string>
+    <string name="change_server">Change server address</string>
+    <string name="downloading">Downloading %1$s…</string>
+    <string name="saved_downloads">Saved to Downloads/JeduAI</string>
+    <string name="save_failed">Couldn\'t save the file</string>
+    <string name="no_file_app">No file picker available on this device</string>
+</resources>

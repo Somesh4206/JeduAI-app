@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "JeduAI — Learn in Your Language",
+  "short_name": "JeduAI",
+  "description": "AI-powered multilingual learning: AI tutor, document & video translation, quizzes, flashcards, Notebook Studio — in your language.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F8F9FF",
+  "theme_color": "#5B5FEF",
+  "categories": ["education", "productivity"],
+  "lang": "en",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

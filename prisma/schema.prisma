@@ -1,0 +1,559 @@
+// JeduAI — Prisma schema (SQLite)
+// Multilingual AI learning platform: users/roles, AI tutor, translation,
+// documents, media translation, quizzes, planner, gamification, classes,
+// assessments, notifications.
+// NOTE: SQLite has no list primitives — arrays/objects are stored as JSON strings.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  passwordHash    String
+  name            String
+  role            String   @default("Student") // Student | Staff | Admin
+  avatarColor     String   @default("#5B5FEF")
+  profileImage    String?
+  educationLevel  String   @default("School") // School | College | University | Self-learner
+  interfaceLang   String   @default("English")
+  explanationLang String   @default("English")
+  subjects        String   @default("[]") // JSON string[]
+  interests       String   @default("[]") // JSON string[]
+  dailyGoalMin    Int      @default(20)
+  points          Int      @default(0)
+  streak          Int      @default(0)
+  lastActiveDay   String? // yyyy-mm-dd
+  theme           String   @default("light")
+  fontScale       Float    @default(1)
+  onboarded       Boolean  @default(false)
+  notifPrefs      String   @default("{}") // JSON
+  isDemo          Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  sessions      Session[]
+  conversations Conversation[]
+  translations  TranslationRecord[]
+  documents     Document[]
+  videos        VideoProject[]
+  quizzes       Quiz[]
+  attempts      QuizAttempt[]
+  tasks         StudyTask[]
+  activities    Activity[]
+  badges        Badge[]
+  notes         Note[]
+  notifications Notification[]
+  bookmarks     Bookmark[]
+  flashcards    Flashcard[]
+  vocabWords    VocabWord[]
+  enrollments   Enrollment[]
+  submissions   Submission[]
+  sharedDecks   SharedDeck[]
+
+  taughtClasses    OnlineClass[] @relation("TeacherClasses")
+  assessmentsBuilt Assessment[]  @relation("AssessmentAuthor")
+
+  notebooks       Notebook[]
+  nbSources       NotebookSource[]
+  nbChunks        SourceChunk[]
+  nbConversations NotebookConversation[]
+  nbMessages      NotebookMessage[]
+  nbArtifacts     NotebookArtifact[]
+}
+
+// ---------------- AI Notebook Studio (NotebookLM-style) ----------------
+
+model Notebook {
+  id            String                 @id @default(cuid())
+  userId        String
+  title         String
+  description   String?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  user          User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sources       NotebookSource[]
+  conversations NotebookConversation[]
+  artifacts     NotebookArtifact[]
+
+  @@index([userId, updatedAt])
+}
+
+model NotebookSource {
+  id         String        @id @default(cuid())
+  notebookId String
+  userId     String
+  title      String
+  kind       String // pdf | docx | txt | md | image | web | youtube | audio | pasted | document | videoproject
+  fileKey    String? // stored upload key (db/uploads) for uploaded files / OCR
+  originUrl  String?
+  refId      String? // existing Document / VideoProject id (kind document | videoproject)
+  refKind    String? // document | videoproject
+  status     String        @default("queued") // queued | processing | ready | failed
+  progress   Int           @default(0)
+  error      String?
+  meta       String        @default("{}") // JSON: pages, durationSec, charCount, lang, siteName, videoAuthor…
+  selected   Boolean       @default(true)
+  chunkCount Int           @default(0)
+  wordCount  Int           @default(0)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  notebook   Notebook      @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  chunks     SourceChunk[]
+  user       User          @relation(fields: [userId], references: [id])
+
+  @@index([notebookId, createdAt])
+  @@index([userId])
+}
+
+model SourceChunk {
+  id         String         @id @default(cuid())
+  sourceId   String
+  notebookId String
+  userId     String
+  idx        Int
+  page       Int? // page number for paged sources (pdf/ocr)
+  heading    String?
+  startSec   Float? // media timestamp for timed sources (youtube/audio/video)
+  endSec     Float?
+  text       String
+  tokens     String // preprocessed tokens for lexical retrieval (BM25)
+  embedVec   String? // JSON number[] — filled only when an embedding provider is configured
+  createdAt  DateTime       @default(now())
+  source     NotebookSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  user       User           @relation(fields: [userId], references: [id])
+
+  @@index([sourceId, idx])
+  @@index([notebookId])
+}
+
+model NotebookConversation {
+  id         String            @id @default(cuid())
+  notebookId String
+  userId     String
+  title      String            @default("New chat")
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  notebook   Notebook          @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  messages   NotebookMessage[]
+  user       User              @relation(fields: [userId], references: [id])
+
+  @@index([notebookId, updatedAt])
+}
+
+model NotebookMessage {
+  id             String               @id @default(cuid())
+  conversationId String
+  userId         String
+  role           String // user | assistant
+  content        String
+  citations      String               @default("[]") // JSON [{index,sourceId,sourceTitle,kind,page,startSec,endSec,heading,snippet,chunkId}]
+  createdAt      DateTime             @default(now())
+  conversation   NotebookConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User                 @relation(fields: [userId], references: [id])
+
+  @@index([conversationId, createdAt])
+}
+
+model NotebookArtifact {
+  id              String   @id @default(cuid())
+  notebookId      String
+  userId          String
+  kind            String // audio-overview | video-overview | mindmap | report | flashcards | quiz | infographic | slides | table
+  title           String
+  status          String   @default("queued") // queued | processing | ready | failed | cancelled
+  progress        Int      @default(0)
+  error           String?
+  config          String   @default("{}") // generation parameters (format, topic, lang, audience…)
+  content         String? // JSON artifact payload (script, storyboard, spec, markdown…)
+  fileKey         String? // rendered media key (mp3 / mp4) when applicable
+  sourceIds       String   @default("[]") // provenance snapshot: source ids used at generation time
+  refType         String? // quiz | deck — links into existing JeduAI modules
+  refId           String?
+  cancelRequested Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  notebook        Notebook @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id])
+
+  @@index([notebookId, kind, updatedAt])
+  @@index([userId, updatedAt])
+}
+
+model Session {
+  token     String   @id
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  userId    String
+  title     String    @default("New chat")
+  subject   String    @default("General")
+  mode      String    @default("balanced") // beginner | exam | steps | revision | quizgen | language
+  lang      String    @default("English")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  Message[]
+
+  @@index([userId, updatedAt])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  role           String // user | assistant
+  content        String
+  rating         Int? // 1 up / -1 down
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
+
+model TranslationRecord {
+  id             String   @id @default(cuid())
+  userId         String
+  sourceLang     String
+  targetLang     String
+  mode           String   @default("direct") // direct | learning
+  sourceText     String
+  translatedText String
+  explanation    String? // learning mode notes
+  saved          Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Document {
+  id         String            @id @default(cuid())
+  userId     String
+  title      String
+  fileName   String
+  fileType   String // pdf | txt | docx | md | png | jpg | webp
+  fileKey    String? // stored upload key (db/uploads) — kept for OCR (scanned pdf / images)
+  pageRange  String? // OCR page range actually read (e.g. "3-10") — null for full documents
+  sizeKB     Int               @default(0)
+  sourceLang String
+  targetLang String
+  status     String            @default("queued") // queued | translating | completed | failed | needs_ocr | ocr
+  progress   Int               @default(0) // 0-100
+  error      String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sections   DocumentSection[]
+
+  @@index([userId, updatedAt])
+}
+
+model DocumentSection {
+  id         String   @id @default(cuid())
+  documentId String
+  idx        Int
+  heading    String?
+  original   String
+  translated String?
+  status     String   @default("pending") // pending | done | failed
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId, idx])
+}
+
+model VideoProject {
+  id          String         @id @default(cuid())
+  userId      String
+  title       String
+  kind        String // audio | video | transcript
+  fileName    String?
+  fileKey     String? // stored upload key (db/uploads)
+  sizeKB      Int            @default(0)
+  durationSec Float          @default(0)
+  sourceLang  String
+  targetLang  String
+  status      String         @default("queued") // queued | extracting | transcribing | translating | completed | failed
+  progress    Int            @default(0)
+  summary     String?
+  chapters    String? // JSON [{title, startSec}]
+  error       String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  segments    VideoSegment[]
+
+  @@index([userId, updatedAt])
+}
+
+model VideoSegment {
+  id         String       @id @default(cuid())
+  videoId    String
+  idx        Int
+  startSec   Float
+  endSec     Float
+  original   String
+  translated String?
+  video      VideoProject @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([videoId, idx])
+}
+
+model Quiz {
+  id         String         @id @default(cuid())
+  userId     String
+  title      String
+  subject    String
+  difficulty String         @default("medium") // easy | medium | hard
+  source     String         @default("ai") // ai | video | doc | staff
+  sourceRef  String? // videoId / documentId / assessmentId
+  timeLimit  Int? // seconds, optional
+  createdAt  DateTime       @default(now())
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions  QuizQuestion[]
+  attempts   QuizAttempt[]
+
+  @@index([userId, createdAt])
+}
+
+model QuizQuestion {
+  id           String  @id @default(cuid())
+  quizId       String
+  idx          Int
+  type         String  @default("mcq") // mcq | truefalse | short
+  question     String
+  options      String  @default("[]") // JSON string[]
+  correctIndex Int?
+  answerText   String? // for truefalse/short reference answer
+  explanation  String?
+  keywords     String? // JSON for short-answer checking
+  quiz         Quiz    @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId, idx])
+}
+
+model QuizAttempt {
+  id        String   @id @default(cuid())
+  quizId    String
+  userId    String
+  answers   String   @default("[]") // JSON [{qIdx, choice?, text?}]
+  mode      String   @default("full") // full quiz | mistakes retry (subset of questions)
+  score     Int      @default(0)
+  total     Int      @default(0)
+  createdAt DateTime @default(now())
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model StudyTask {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  subject   String   @default("General")
+  date      String // yyyy-mm-dd
+  minutes   Int      @default(30)
+  done      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String // chat | translate | document | video | quiz | task | class | assessment | signup
+  points    Int      @default(0)
+  meta      String   @default("{}") // JSON
+  day       String // yyyy-mm-dd
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, day])
+}
+
+model Badge {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  icon      String
+  threshold Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Note {
+  id         String   @id @default(cuid())
+  userId     String
+  content    String
+  sourceType String? // document | video | quiz | translation | general
+  sourceId   String?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Bookmark {
+  id         String   @id @default(cuid())
+  userId     String
+  kind       String   @default("bookmark") // bookmark | highlight
+  label      String
+  note       String?
+  sourceType String? // document | video
+  sourceId   String?
+  sectionIdx Int?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Flashcard {
+  id         String   @id @default(cuid())
+  userId     String
+  deckTitle  String   @default("My deck") // cards from the same source share a deck
+  sourceType String   @default("doc") // doc | video | manual
+  sourceId   String?
+  front      String
+  back       String
+  lang       String   @default("English")
+  box        Int      @default(1) // Leitner box 1..5 (spaced repetition)
+  streak     Int      @default(0) // consecutive correct recalls
+  lastResult String? // known | again
+  dueAt      DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, dueAt])
+  @@index([userId, sourceType, sourceId])
+}
+
+model VocabWord {
+  id          String   @id @default(cuid())
+  userId      String
+  term        String
+  meaning     String
+  example     String?
+  lang        String   @default("English") // language of the term
+  meaningLang String   @default("English") // language of the meaning
+  source      String   @default("manual") // translation | tutor | manual
+  box         Int      @default(1) // Leitner box 1..5 (practice promotion)
+  lastResult  String? // known | again
+  mastered    Boolean  @default(false)
+  dueAt       DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, dueAt])
+}
+
+model SharedDeck {
+  id        String    @id @default(cuid())
+  code      String    @unique // 6-char share code, e.g. K7QM2X
+  userId    String
+  deckKey   String // creator's deck key "sourceType:sourceId"
+  title     String
+  lang      String    @default("English")
+  cards     String    @default("[]") // JSON [{front, back}]
+  imports   Int       @default(0)
+  expiresAt DateTime? // share codes expire 30 days after publish/refresh
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, deckKey])
+}
+
+model OnlineClass {
+  id          String       @id @default(cuid())
+  teacherId   String
+  title       String
+  subject     String
+  description String?
+  scheduledAt DateTime
+  durationMin Int          @default(45)
+  meetingLink String?
+  status      String       @default("scheduled") // scheduled | live | completed | cancelled
+  classCode   String       @default(cuid())
+  maxStudents Int          @default(50)
+  createdAt   DateTime     @default(now())
+  teacher     User         @relation("TeacherClasses", fields: [teacherId], references: [id], onDelete: Cascade)
+  enrollments Enrollment[]
+
+  @@index([scheduledAt])
+}
+
+model Enrollment {
+  id        String      @id @default(cuid())
+  classId   String
+  studentId String
+  createdAt DateTime    @default(now())
+  class     OnlineClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  student   User        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, studentId])
+}
+
+model Assessment {
+  id          String       @id @default(cuid())
+  authorId    String
+  title       String
+  subject     String
+  description String?
+  dueAt       DateTime?
+  totalMarks  Int          @default(0)
+  questions   String       @default("[]") // JSON [{question, options[], correctIndex, explanation}]
+  status      String       @default("published") // draft | published
+  audience    String       @default("All Students")
+  createdAt   DateTime     @default(now())
+  author      User         @relation("AssessmentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  submissions Submission[]
+
+  @@index([createdAt])
+}
+
+model Submission {
+  id           String     @id @default(cuid())
+  assessmentId String
+  studentId    String
+  answers      String     @default("[]") // JSON
+  score        Int        @default(0)
+  submittedAt  DateTime   @default(now())
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  student      User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([assessmentId, studentId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  kind      String   @default("system") // system | class | assessment | job | achievement
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
