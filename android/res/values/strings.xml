@@ -13,6 +13,7 @@
     <string name="wifi_tip">Testing on your own computer? Run JeduAI there (bun run dev) and enter its Wi-Fi address, like http://192.168.1.5:3000</string>
     <string name="offline_title">Can\'t reach the server</string>
     <string name="offline_msg">Check your internet connection and the server address, then try again.</string>
+    <string name="offline_msg_locked">Can\'t reach %1$s right now. Check your internet connection, then try again — the app reconnects automatically once the server is back.</string>
     <string name="retry">Try again</string>
     <string name="change_server">Change server address</string>
     <string name="downloading">Downloading %1$s…</string>

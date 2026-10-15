@@ -38,21 +38,20 @@ import java.util.List;
 
 /**
  * JeduAI Android client — a thin, native shell around the JeduAI web app.
- * First run: the user enters their JeduAI server address (self-hosted / school URL),
- * which is remembered in SharedPreferences. All learning content, auth and data
- * stay on the user's own JeduAI server.
+ * Official build: the server URL below is baked in at build time, so the app
+ * connects straight away on first launch — the user is never asked for an
+ * address. All learning content, auth and data stay on the JeduAI server.
  */
 public class MainActivity extends Activity {
 
     private static final int FILE_CHOOSER_CODE = 1001;
 
     /**
-     * Build-time default server. Empty = ask the user (normal self-hosted behaviour).
-     * When a school/instance URL is known at build time, set it here (or via -PjeDUAI... sed)
-     * and the app connects straight away on first launch — the address can still be
-     * changed later from the offline screen's "Change server address".
+     * Build-time default server. Empty = ask the user (generic self-hosted build).
+     * Official published build connects straight to this URL on first launch —
+     * no setup screen, and the address cannot be changed from inside the app.
      */
-    private static final String DEFAULT_URL = "";
+    private static final String DEFAULT_URL = "https://jeduai-app.space-z.ai";
 
     private WebView web = null;
     private ProgressBar progress = null;
@@ -63,10 +62,15 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         serverUrl = getSharedPreferences("cfg", MODE_PRIVATE).getString("url", "");
-        if ((serverUrl == null || serverUrl.isEmpty()) && DEFAULT_URL != null && DEFAULT_URL.length() > 0) {
-            // A default server was baked in at build time — connect straight away.
+        if (DEFAULT_URL != null && DEFAULT_URL.length() > 0) {
+            // Official build: the server is baked in — connect straight away and
+            // never ask for an address. This also heals older installs that had
+            // saved a different address under the previous "enter your server" flow.
             serverUrl = DEFAULT_URL;
-            getSharedPreferences("cfg", MODE_PRIVATE).edit().putString("url", DEFAULT_URL).apply();
+            getSharedPreferences("cfg", MODE_PRIVATE).edit()
+                    .putString("url", DEFAULT_URL)
+                    .putString("last", DEFAULT_URL)
+                    .apply();
             showWeb(DEFAULT_URL);
         } else if (serverUrl == null || serverUrl.isEmpty()) {
             showSetup();
@@ -243,6 +247,12 @@ public class MainActivity extends Activity {
 
     private void showOffline() {
         setContentView(R.layout.activity_offline);
+        boolean locked = DEFAULT_URL != null && DEFAULT_URL.length() > 0;
+        TextView msg = (TextView) findViewById(R.id.offlineMsg);
+        if (locked && msg != null) {
+            // Show exactly which server the app is tied to (no address entry possible).
+            msg.setText(getString(R.string.offline_msg_locked, Uri.parse(DEFAULT_URL).getHost()));
+        }
         Button retry = (Button) findViewById(R.id.retryBtn);
         retry.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -251,12 +261,17 @@ public class MainActivity extends Activity {
             }
         });
         Button change = (Button) findViewById(R.id.changeBtn);
-        change.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showSetup();
-            }
-        });
+        if (locked) {
+            // Locked build — there is no server address to change, hide the option.
+            change.setVisibility(View.GONE);
+        } else {
+            change.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    showSetup();
+                }
+            });
+        }
     }
 
     /* ---------------- file chooser result ---------------- */

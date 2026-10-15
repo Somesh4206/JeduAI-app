@@ -1,10 +1,9 @@
 "use client";
 // JeduAI — "Get the app": Android APK download + PWA install
 import React from "react";
-import { Smartphone, Download, Copy, Check, QrCode, ShieldCheck, MonitorDown } from "lucide-react";
+import { Smartphone, Download, QrCode, ShieldCheck, MonitorDown, Check } from "lucide-react";
 import QRCode from "qrcode";
 import { Card, Sheet, toast } from "./ui";
-import { cn } from "@/lib/utils";
 
 type InstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -73,7 +72,6 @@ function GetAppSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v: 
   const { canInstall, installed, install } = usePwaInstall();
   const [qr, setQr] = React.useState("");
   const [origin, setOrigin] = React.useState("");
-  const [copied, setCopied] = React.useState(false);
   const [ua, setUa] = React.useState({ android: false, ios: false });
 
   React.useEffect(() => {
@@ -93,17 +91,6 @@ function GetAppSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v: 
       .catch(() => setQr(""));
   }, [open]);
 
-  async function copyServer() {
-    try {
-      await navigator.clipboard.writeText(window.location.origin);
-      setCopied(true);
-      toast.success("Server address copied — paste it into the app");
-      setTimeout(() => setCopied(false), 2500);
-    } catch {
-      toast.info("Couldn't auto-copy — long-press the address to copy it");
-    }
-  }
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange} title="Get JeduAI on your phone">
       <div className="space-y-4 pb-2">
@@ -115,7 +102,7 @@ function GetAppSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v: 
           <div className="min-w-0">
             <div className="text-[15px] font-black leading-tight text-foreground">JeduAI for Android</div>
             <div className="mt-0.5 text-[11.5px] leading-snug text-muted-foreground">
-              v1.1 · 42 KB · Android 7.0+ · works with any JeduAI server
+              v1.2 · 42 KB · Android 7.0+ · connects to this server automatically
             </div>
           </div>
         </div>
@@ -123,8 +110,8 @@ function GetAppSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v: 
         {/* download button */}
         <a
           href="/downloads/jeduai.apk"
-          download="jeduai-1.1.apk"
-          onClick={() => toast.success("Downloading jeduai.apk — open it once the download finishes")}
+          download="jeduai-1.2.apk"
+          onClick={() => toast.success("Downloading JeduAI v1.2 — open it once the download finishes")}
           className="j-grad-primary flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-[14.5px] font-black text-white shadow-lg shadow-primary/25 transition active:scale-[0.99]"
         >
           <Download className="size-4.5" /> Download Android app (.apk)
@@ -139,7 +126,7 @@ function GetAppSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v: 
             {[
               <>Tap <b>Download</b> above and wait for the file.</>,
               <>Open the file (from the notification or your Downloads folder) and allow <b>&quot;Install unknown apps&quot;</b> if asked — it&apos;s a direct download, not from the Play Store.</>,
-              <>Open <b>JeduAI</b>, <b>copy the server address below</b> and paste it on the app&apos;s first screen, then sign in.</>,
+              <>Open <b>JeduAI</b> — it connects to this server automatically, so just <b>sign in</b> (or create an account) and start learning.</>,
             ].map((t, i) => (
               <li key={i} className="flex gap-2.5 text-[12.5px] leading-relaxed text-foreground/90">
                 <span className="j-grad-primary mt-0.5 grid size-5 shrink-0 place-items-center rounded-full text-[10.5px] font-black text-white">
@@ -151,28 +138,25 @@ function GetAppSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v: 
           </ol>
         </div>
 
-        {/* server address */}
-        <div className="rounded-2xl border border-border/80 bg-card p-4">
-          <div className="mb-2 flex items-center gap-2 text-[11px] font-black uppercase tracking-wider text-muted-foreground">
-            <ShieldCheck className="size-3.5 text-j-success" /> Your server address
+        {/* pre-configured server */}
+        <div className="rounded-2xl border border-j-success/30 bg-j-success/5 p-4">
+          <div className="mb-2 flex items-center gap-2 text-[11px] font-black uppercase tracking-wider text-j-success">
+            <ShieldCheck className="size-3.5" /> Pre-configured server
           </div>
           <div className="flex items-center gap-2">
             <code className="min-w-0 flex-1 truncate rounded-xl bg-muted/60 px-3 py-2.5 text-[12px] font-bold text-foreground">
               {origin || "…"}
             </code>
-            <button
-              onClick={copyServer}
-              aria-label="Copy server address"
-              className={cn(
-                "grid size-10 shrink-0 place-items-center rounded-xl transition active:scale-95",
-                copied ? "bg-j-success/15 text-j-success" : "bg-primary/10 text-primary"
-              )}
+            <div
+              aria-label="Server verified"
+              className="grid size-10 shrink-0 place-items-center rounded-xl bg-j-success/15 text-j-success"
             >
-              {copied ? <Check className="size-4.5" /> : <Copy className="size-4.5" />}
-            </button>
+              <Check className="size-4.5" />
+            </div>
           </div>
           <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-            This is the exact address the app asks for on its first screen — copy it now and paste it there. Your account and data stay on this server.
+            No address to type — the app is locked to this server, connects on first launch, and your account and data
+            stay right here.
           </p>
         </div>
 
