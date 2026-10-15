@@ -1,0 +1,28 @@
+name: iOS build check
+
+# Manual-only: verifies the ios/ Xcode project compiles (Simulator, no signing).
+# Trigger from GitHub: Actions -> "iOS build check" -> Run workflow.
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build JeduAI for the iOS Simulator (no code signing)
+        run: |
+          xcodebuild -project ios/JeduAI.xcodeproj \
+            -scheme JeduAI \
+            -destination 'generic/platform=iOS Simulator' \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build | xcbeautify || xcodebuild -project ios/JeduAI.xcodeproj \
+            -scheme JeduAI \
+            -destination 'generic/platform=iOS Simulator' \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build

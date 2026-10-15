@@ -1,7 +1,7 @@
 "use client";
 // JeduAI — "Get the app": Android APK download + PWA install
 import React from "react";
-import { Smartphone, Download, QrCode, ShieldCheck, MonitorDown, Check } from "lucide-react";
+import { Smartphone, Download, QrCode, ShieldCheck, MonitorDown, Check, Apple, Share } from "lucide-react";
 import QRCode from "qrcode";
 import { Card, Sheet, toast } from "./ui";
 
@@ -59,7 +59,7 @@ export default function GetAppSection() {
         </div>
         <div className="flex-1">
           <div className="text-[14.5px] font-bold text-foreground">Get JeduAI on your phone</div>
-          <div className="text-[11.5px] text-muted-foreground">Android app (.apk) · or install as a web app</div>
+          <div className="text-[11.5px] text-muted-foreground">Android & iPhone · installs in seconds</div>
         </div>
         <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-primary">New</span>
       </Card>
@@ -190,6 +190,61 @@ function GetAppSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v: 
         <div className="flex items-center gap-3 pt-1">
           <div className="h-px flex-1 bg-border" />
           <span className="text-[10.5px] font-black uppercase tracking-wider text-muted-foreground">
+            On iPhone or iPad?
+          </span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
+        {/* iOS — add to home screen */}
+        <div className="rounded-2xl border border-border/80 bg-card p-4">
+          <div className="flex items-center gap-2 text-[13px] font-black text-foreground">
+            <Apple className="size-4 text-foreground" /> Install JeduAI on iPhone & iPad
+          </div>
+          <p className="mt-1.5 text-[11.5px] leading-relaxed text-muted-foreground">
+            Works today — no App Store needed. Installs a full-screen app with its own icon on your home screen.
+          </p>
+          <ol className="mt-3 space-y-2.5">
+            {[
+              <>
+                Open <b>{origin || "this site"}</b> in <b>Safari</b> (use this exact address).
+              </>,
+              <>
+                Tap the <b>Share</b> button <Share className="inline size-3.5 align-[-2px] text-muted-foreground" /> in the toolbar, then scroll down.
+              </>,
+              <>
+                Tap <b>Add to Home Screen</b> → <b>Add</b>. Launch JeduAI from your home screen and sign in — same account,
+                same data.
+              </>,
+            ].map((t, i) => (
+              <li key={i} className="flex gap-2.5 text-[12.5px] leading-relaxed text-foreground/90">
+                <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-foreground/80 text-[10.5px] font-black text-background">
+                  {i + 1}
+                </span>
+                <span>{t}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        {/* iOS — native build note */}
+        <div className="flex items-start gap-3 rounded-2xl border border-border/80 bg-muted/30 p-4">
+          <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+            <Apple className="size-4.5" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[12.5px] font-black text-foreground">Native iOS app (Swift)</div>
+            <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
+              A full native build — locked to this server, with file sharing, offline retry and pull-to-refresh — is
+              ready in the project&apos;s <code className="rounded bg-muted px-1 py-0.5 text-[10.5px] font-bold">ios/</code> folder.
+              Build it with Xcode to distribute via TestFlight or the App Store.
+            </p>
+          </div>
+        </div>
+
+        {/* divider */}
+        <div className="flex items-center gap-3 pt-1">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-[10.5px] font-black uppercase tracking-wider text-muted-foreground">
             Prefer no download?
           </span>
           <div className="h-px flex-1 bg-border" />
@@ -232,7 +287,8 @@ function GetAppSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v: 
                   </p>
                 ) : ua.ios ? (
                   <p>
-                    On iPhone/iPad: tap the <b>Share</b> button in Safari, then <b>Add to Home Screen</b>.
+                    Use the <b>iPhone & iPad steps above</b> — the full-screen experience is identical to the native
+                    app.
                   </p>
                 ) : (
                   <p>
