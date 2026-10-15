@@ -46,6 +46,14 @@ public class MainActivity extends Activity {
 
     private static final int FILE_CHOOSER_CODE = 1001;
 
+    /**
+     * Build-time default server. Empty = ask the user (normal self-hosted behaviour).
+     * When a school/instance URL is known at build time, set it here (or via -PjeDUAI... sed)
+     * and the app connects straight away on first launch — the address can still be
+     * changed later from the offline screen's "Change server address".
+     */
+    private static final String DEFAULT_URL = "";
+
     private WebView web = null;
     private ProgressBar progress = null;
     private ValueCallback<Uri[]> fileCallback = null;
@@ -55,7 +63,12 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         serverUrl = getSharedPreferences("cfg", MODE_PRIVATE).getString("url", "");
-        if (serverUrl == null || serverUrl.isEmpty()) {
+        if ((serverUrl == null || serverUrl.isEmpty()) && DEFAULT_URL != null && DEFAULT_URL.length() > 0) {
+            // A default server was baked in at build time — connect straight away.
+            serverUrl = DEFAULT_URL;
+            getSharedPreferences("cfg", MODE_PRIVATE).edit().putString("url", DEFAULT_URL).apply();
+            showWeb(DEFAULT_URL);
+        } else if (serverUrl == null || serverUrl.isEmpty()) {
             showSetup();
         } else {
             showWeb(serverUrl);
@@ -67,7 +80,9 @@ public class MainActivity extends Activity {
     private void showSetup() {
         setContentView(R.layout.activity_setup);
         final EditText input = (EditText) findViewById(R.id.urlInput);
-        input.setText(getSharedPreferences("cfg", MODE_PRIVATE).getString("last", "https://"));
+        String last = getSharedPreferences("cfg", MODE_PRIVATE).getString("last", "");
+        if (last == null || last.isEmpty()) last = DEFAULT_URL != null && DEFAULT_URL.length() > 0 ? DEFAULT_URL : "https://";
+        input.setText(last);
         final Button connect = (Button) findViewById(R.id.connectBtn);
         View.OnClickListener onConnect = new View.OnClickListener() {
             @Override
@@ -102,7 +117,12 @@ public class MainActivity extends Activity {
     private static String normalize(String raw) {
         String u = raw == null ? "" : raw.trim();
         if (u.isEmpty()) return "";
-        if (!u.startsWith("http://") && !u.startsWith("https://")) u = "https://" + u;
+        // People sometimes paste the APK download link by mistake — use its origin instead.
+        if (u.endsWith("/downloads/jeduai.apk")) {
+            u = u.substring(0, u.length() - "/downloads/jeduai.apk".length());
+        }
+        String low = u.toLowerCase();
+        if (!low.startsWith("http://") && !low.startsWith("https://")) u = "https://" + u;
         while (u.endsWith("/") && u.length() > 9) u = u.substring(0, u.length() - 1);
         return u;
     }

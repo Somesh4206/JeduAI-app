@@ -3,7 +3,14 @@ import { db } from "@/lib/db";
 import { ensureSeeded } from "@/lib/jeduai/seed";
 import { getSessionUser, publicUser } from "@/lib/jeduai/auth";
 
-export async function GET() {
+export async function GET(request: Request) {
+  // Capture the public origin this deployment is reached through (for APK default-URL baking).
+  try {
+    const h = request.headers.get("host") ?? "";
+    if (h && !/^(localhost|127\.|\[::1\]|0\.0\.0\.0)/.test(h)) {
+      console.log(`[origin] ${request.headers.get("x-forwarded-proto") ?? "http"}://${h}`);
+    }
+  } catch { /* logging only */ }
   try {
     await ensureSeeded();
     const user = await getSessionUser();

@@ -115,7 +115,7 @@ function GetAppSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v: 
           <div className="min-w-0">
             <div className="text-[15px] font-black leading-tight text-foreground">JeduAI for Android</div>
             <div className="mt-0.5 text-[11.5px] leading-snug text-muted-foreground">
-              v1.0 · 38 KB · Android 7.0+ · works with any JeduAI server
+              v1.1 · 42 KB · Android 7.0+ · works with any JeduAI server
             </div>
           </div>
         </div>
@@ -123,7 +123,7 @@ function GetAppSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v: 
         {/* download button */}
         <a
           href="/downloads/jeduai.apk"
-          download="jeduai-1.0.apk"
+          download="jeduai-1.1.apk"
           onClick={() => toast.success("Downloading jeduai.apk — open it once the download finishes")}
           className="j-grad-primary flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-[14.5px] font-black text-white shadow-lg shadow-primary/25 transition active:scale-[0.99]"
         >
@@ -139,7 +139,7 @@ function GetAppSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v: 
             {[
               <>Tap <b>Download</b> above and wait for the file.</>,
               <>Open the file (from the notification or your Downloads folder) and allow <b>&quot;Install unknown apps&quot;</b> if asked — it&apos;s a direct download, not from the Play Store.</>,
-              <>Open <b>JeduAI</b>, paste your server address below, and sign in.</>,
+              <>Open <b>JeduAI</b>, <b>copy the server address below</b> and paste it on the app&apos;s first screen, then sign in.</>,
             ].map((t, i) => (
               <li key={i} className="flex gap-2.5 text-[12.5px] leading-relaxed text-foreground/90">
                 <span className="j-grad-primary mt-0.5 grid size-5 shrink-0 place-items-center rounded-full text-[10.5px] font-black text-white">
@@ -172,7 +172,7 @@ function GetAppSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v: 
             </button>
           </div>
           <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-            The app asks for this on first launch. Your account and data stay on your school&apos;s server.
+            This is the exact address the app asks for on its first screen — copy it now and paste it there. Your account and data stay on this server.
           </p>
         </div>
 

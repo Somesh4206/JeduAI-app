@@ -2,10 +2,15 @@
 <resources>
     <string name="app_name">JeduAI</string>
     <string name="tagline">Learn in Your Language</string>
-    <string name="url_hint">Server address, e.g. https://school.example.com</string>
+    <string name="url_hint">Your JeduAI web address, e.g. https://school.example.com</string>
     <string name="connect">Connect</string>
     <string name="invalid_url">Please enter a valid address, like https://your-jeduai-server.com</string>
-    <string name="setup_help">JeduAI is self-hosted. Enter the web address your school or teacher gave you — the same link you use in the browser. Your account and data stay on that server.</string>
+    <string name="setup_help">JeduAI is self-hosted: this app is the frame — the address below is where the actual app, your account and your data live. You only enter it once.</string>
+    <string name="steps_title">Where do I find this address?</string>
+    <string name="step_1">1.  Open JeduAI in any web browser — the same link you already use (your school\'s link or your preview).</string>
+    <string name="step_2">2.  Copy the address from the browser\'s address bar. In the app: Profile → Get the app → \"Your server address\".</string>
+    <string name="step_3">3.  Paste it here and tap Connect. Done.</string>
+    <string name="wifi_tip">Testing on your own computer? Run JeduAI there (bun run dev) and enter its Wi-Fi address, like http://192.168.1.5:3000</string>
     <string name="offline_title">Can\'t reach the server</string>
     <string name="offline_msg">Check your internet connection and the server address, then try again.</string>
     <string name="retry">Try again</string>
