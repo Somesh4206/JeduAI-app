@@ -198,9 +198,27 @@ Both clients are thin, signed shells around the web app — **the server URL is 
 ---
 
 ## 🧪 QA
+End-to-end testing was completed in a real browser (agent-browser) during development. The following flows and features were verified:
 
-Verified end-to-end in a real browser (agent-browser) during development: onboarding → signup → preferences → dashboard; live AI chat; real translations (English→Hindi/Tamil); document upload → progressive translation → comparison reader; TTS-generated lecture → ASR → timestamped Hindi transcript → chapters/summary/quiz-from-video; quiz grading incl. short answers; assessment submission; class enrollment; planner tasks; dark mode; 390 px mobile layout; sticky bottom navigation. No console or hydration errors.
+User Journey
+Onboarding → Signup → Preferences → Dashboard
+Core Features
+Live AI chat
+Real-time translations (English → Hindi / Tamil)
+Document upload → Progressive translation → Comparison reader
 
+Video & Audio Pipeline
+TTS-generated lecture → ASR → Timestamped Hindi transcript → Chapters / Summary / Quiz-from-video
+Assessments & Learning
+Quiz grading (including short answers)
+Assessment submission
+Class enrollment
+Planner tasks
+
+UI / UX
+Dark mode
+390 px mobile layout
+Sticky bottom navigation
 ## ⚠️ Known Limitations
 
 - OCR is AI-vision based with a practical cap (8 pages per pass — pick which pages for longer scans); illegible scans are reported honestly.
